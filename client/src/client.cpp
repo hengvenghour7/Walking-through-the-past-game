@@ -45,20 +45,23 @@ int main(int argc, char *argv[])
         std::cout << "receiving initial data " << std::string(recv_buf.data(), len)  << "\n";
         std::istringstream iss(std::string(recv_buf.data(), len));
         std::string token1;
+        int playerId;
         while(std::getline(iss, token1, ','))
         {
+            playerId = std::stoi(token1);
             std::cout<< token1 << "\n";
         }
-
         std::cout.write(recv_buf.data(), len);
         InitWindow(800, 800, "Walking through the past");
         SetTargetFPS(60);
+        Game game(playerId);
         while(!WindowShouldClose())
         {
             float deltaTime = GetFrameTime();
             game.tick(deltaTime);
-            socket.send_to(boost::asio::buffer(std::to_string(game.getPlayerLocation().x)), reciever_endpoint);
+            socket.send_to(boost::asio::buffer(playerId + "," + std::to_string(game.getPlayerLocation().x)), reciever_endpoint);
         }
+        socket.send_to(boost::asio::buffer("Disconnect"), reciever_endpoint);
         CloseWindow();
     }
     catch (std::exception& e)

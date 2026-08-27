@@ -1,9 +1,17 @@
 #ifndef SCHARACTER_H
 #define SCHARACTER_H
 
-struct SCharacter {
+#include "../helpers/dataTypeHelper.h"
+#include <string>
+
+class SCharacter {
+    int id;
+    SRectangle playerDimension;
     public:
-    SCharacter();
+    SCharacter(int id, SRectangle playerDimension);
+    int getId();
+    void updatePlayerDimension(SRectangle dimension);
+    std::string getDataAsString();
 };
 
 #endif

@@ -2,6 +2,8 @@
 #include <boost/asio.hpp>
 #include <vector>
 
+#include "playersHandler/playersHandler.h"
+
 using boost::asio::ip::udp;
 
 int main()
@@ -13,7 +15,9 @@ int main()
         int y;
     };
     int x{300};
+    PlayersHandler playersHandler;
     std::vector<playerInfo> allPlayerInfo{};
+
     try
     {
         boost::asio::io_context io_context;
@@ -31,8 +35,10 @@ int main()
                 if (rec_message == "Connect")
                 {
                     std::cout<< "new player join the game" << std::endl;
-                    playerID++;
-                    std::string tempMsg = std::to_string(playerID) + "," + "3";
+                    playersHandler.addNewPlayer(&playerID);
+                    std::string tempMsg = playersHandler.getDataAsString();
+                    std::size_t len = socket.receive_from(boost::asio::buffer(recv_buf), remote_endpoint);
+                    std::cout << std::string(recv_buf.data(), len) << "\n";
                     socket.send_to(boost::asio::buffer(tempMsg), remote_endpoint, 0, err);
                 }
                 // std::cout << rec_message << std::endl;
