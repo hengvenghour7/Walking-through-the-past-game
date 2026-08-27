@@ -1,0 +1,6 @@
+*.exe
+*.dsym
+main
+build/
+client/saved/save.json
+.DS_Store
