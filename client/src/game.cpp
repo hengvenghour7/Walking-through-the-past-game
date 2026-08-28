@@ -11,9 +11,22 @@ void Game::tick(float deltaTime)
 {
     BeginDrawing();
         ClearBackground(ORANGE);
+        float speed = deltaTime * 150;
         if (IsKeyDown(KEY_D))
         {
-            allPlayers[playerId].dimension.x++;
+            allPlayers[playerId].dimension.x+=speed;
+        }
+        if (IsKeyDown(KEY_A))
+        {
+            allPlayers[playerId].dimension.x-=speed;
+        }
+        if (IsKeyDown(KEY_W))
+        {
+            allPlayers[playerId].dimension.y-=speed;
+        }
+        if (IsKeyDown(KEY_S))
+        {
+            allPlayers[playerId].dimension.y+=speed;
         }
     draw();
     EndDrawing();

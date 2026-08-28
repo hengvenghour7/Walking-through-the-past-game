@@ -2,6 +2,7 @@
 #include <boost/asio.hpp>
 #include <vector>
 #include <chrono>
+#include <thread>
 
 #include "playersHandler/playersHandler.h"
 
@@ -27,14 +28,14 @@ int main()
     {
         boost::asio::io_context io_context;
         udp::socket socket(io_context, udp::endpoint(udp::v4(), 5000));
-        // socket.non_blocking(true);
+        socket.non_blocking(true);
         for (;;)
         {
-            auto now = steady_clock::now();
+                auto now = steady_clock::now();
                 std::array<char, 1024> recv_buf;
                 udp::endpoint remote_endpoint;
                 boost::system::error_code err;
-                std::size_t len = socket.receive_from(boost::asio::buffer(recv_buf), remote_endpoint);
+                std::size_t len = socket.receive_from(boost::asio::buffer(recv_buf), remote_endpoint, 0, err);
                 if (len > 0)
                 {
                     std::string rec_message(recv_buf.data(), len);
@@ -74,7 +75,7 @@ int main()
                         }
                     nextTick += tickRate;
                 }
-            
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }
     catch (std::exception& e)

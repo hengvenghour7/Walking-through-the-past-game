@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
         udp::resolver resolver(io_context);
         udp::endpoint reciever_endpoint =
-        *resolver.resolve(udp::v4(), "127.0.0.1", "5000").begin();
+        *resolver.resolve(udp::v4(), "192.168.0.129", "5000").begin();
         udp::socket socket(io_context);
         socket.open(udp::v4());
         
