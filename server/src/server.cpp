@@ -14,7 +14,6 @@ int main()
         int x;
         int y;
     };
-    int x{300};
     PlayersHandler playersHandler;
     std::vector<playerInfo> allPlayerInfo{};
 
@@ -26,7 +25,6 @@ int main()
         {
             std::array<char, 1024> recv_buf;
             udp::endpoint remote_endpoint;
-            std::string message = "Message from the server haha";
             boost::system::error_code err;
             std::size_t len = socket.receive_from(boost::asio::buffer(recv_buf), remote_endpoint);
             if (len > 0)
@@ -36,15 +34,34 @@ int main()
                 {
                     std::cout<< "new player join the game" << std::endl;
                     playersHandler.addNewPlayer(&playerID);
-                    std::string tempMsg = playersHandler.getDataAsString();
-                    std::size_t len = socket.receive_from(boost::asio::buffer(recv_buf), remote_endpoint);
-                    std::cout << std::string(recv_buf.data(), len) << "\n";
+                    std::string tempMsg = "Join" + std::string(",", 1) + playersHandler.getDataAsString();
+                    std::cout << rec_message << std::endl;
+                    socket.send_to(boost::asio::buffer(tempMsg), remote_endpoint, 0, err);
+                }
+                else{
+                    std::istringstream iss(rec_message);
+                    std::string token1;
+                    std::string messageType;
+                    std::getline(iss, messageType, ',');
+                    if (messageType == "update")
+                    {
+                        while (std::getline(iss, token1, ','))
+                        {
+                            int temp_id = std::stoi(token1);
+                            std::getline(iss, token1, ',');
+                            int temp_x = std::stoi(token1);
+                            std::cout<< "x location" << temp_x << std::flush;
+                            std::getline(iss, token1, ',');
+                            int temp_y = std::stoi(token1);
+                            playersHandler.updatePlayerById(temp_id, SRectangle{temp_x, temp_y, 40, 40});
+                        }
+                    }
+                    std::string tempMsg = "Move" + std::string(",", 1) + playersHandler.getDataAsString();
                     socket.send_to(boost::asio::buffer(tempMsg), remote_endpoint, 0, err);
                 }
                 // std::cout << rec_message << std::endl;
             }
             
-            socket.send_to(boost::asio::buffer(message), remote_endpoint, 0, err);
         }
     }
     catch (std::exception& e)

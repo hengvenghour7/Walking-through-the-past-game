@@ -18,7 +18,6 @@
 
 using boost::asio::ip::udp;
 
-Game game;
 int main(int argc, char *argv[])
 {
     try
@@ -37,29 +36,71 @@ int main(int argc, char *argv[])
         socket.open(udp::v4());
 
         std::string send_buf = "Connect";
+
+        std::cout << "Sending Connect\n";
         socket.send_to(boost::asio::buffer(send_buf), reciever_endpoint);
+        std::cout << "Waiting for server...\n";
+
         std::array<char, 1024> recv_buf;
         udp::endpoint sender_endpoint;
         size_t len = socket.receive_from(boost::asio::buffer(recv_buf), sender_endpoint);
 
         std::cout << "receiving initial data " << std::string(recv_buf.data(), len)  << "\n";
         std::istringstream iss(std::string(recv_buf.data(), len));
+        std::string messageType;
         std::string token1;
+        std::getline(iss, messageType, ',');
         int playerId;
-        while(std::getline(iss, token1, ','))
+        int XLocation{};
+        if (std::getline(iss, token1, ','))
         {
             playerId = std::stoi(token1);
             std::cout<< token1 << "\n";
+            std::cout<< token1 << "\n";
+            std::getline(iss, token1, ',');
+            XLocation = std::stoi(token1);
         }
+        Game game(playerId);
+        
+        game.addPlayer(TempPlayer{playerId, Rectangle{float(XLocation), 200, 40, 40}});
+        
         std::cout.write(recv_buf.data(), len);
         InitWindow(800, 800, "Walking through the past");
         SetTargetFPS(60);
-        Game game(playerId);
         while(!WindowShouldClose())
         {
+            std::istringstream iss(std::string(recv_buf.data(), len));
+            std::string messageType;
+            std::string token1;
+            std::getline(iss, messageType, ',');
+            if (messageType == "Join") {
+                if (std::getline(iss, token1, ','))
+                {
+                    int temp_Id2 = std::stoi(token1);
+                    std::cout<< token1 << "\n";
+                    std::cout<< token1 << "\n";
+                    std::getline(iss, token1, ',');
+                    XLocation = std::stoi(token1);
+                    game.addPlayer(TempPlayer{temp_Id2, Rectangle{float(XLocation), 200, 40, 40}});
+                }
+            }
+            if (messageType == "Move")
+            {
+                while(std::getline(iss, token1, ','))
+                {
+                    int temp_id = std::stoi(token1);
+                    std::getline(iss, token1, ',');
+                    int locationX = std::stoi(token1);
+                    std::cout<< "Player id " << temp_id << " locationX " << locationX << " **" << std::flush;
+                    std::getline(iss, token1, ',');
+                    int locationY = std::stoi(token1);
+                    game.updatePlayerbyId(temp_id, Rectangle{float(locationX), float(locationY), 40, 40});
+                }
+            }
             float deltaTime = GetFrameTime();
             game.tick(deltaTime);
-            socket.send_to(boost::asio::buffer(playerId + "," + std::to_string(game.getPlayerLocation().x)), reciever_endpoint);
+            socket.send_to(boost::asio::buffer("update" + std::string(",", 1) + std::to_string(playerId) + "," + std::to_string(game.getPlayerLocationById(playerId).x) + "," + std::to_string(game.getPlayerLocationById(playerId).y)), reciever_endpoint);
+            size_t len = socket.receive_from(boost::asio::buffer(recv_buf), sender_endpoint);
         }
         socket.send_to(boost::asio::buffer("Disconnect"), reciever_endpoint);
         CloseWindow();
