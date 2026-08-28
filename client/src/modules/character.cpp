@@ -4,3 +4,7 @@ Character::Character(Rectangle dimension, const char * textureSrc): texture(Load
 {
 
 }
+void Character::updatePos(Rectangle dimension)
+{
+    this->dimension = dimension;
+}

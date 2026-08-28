@@ -1,31 +1,60 @@
 #include "game.h"
 #include "raylib.h"
 
+#include <iostream>
+
 Game::Game(int id): playerId(id)
 {
-    allPlayers.push_back(playerDim);
+    // allPlayers.push_back(playerDim);
 }
 void Game::tick(float deltaTime)
 {
     BeginDrawing();
         ClearBackground(ORANGE);
-        DrawRectangle(playerDim.x, playerDim.y, playerDim.width, playerDim.height, BLACK);
+        float speed = deltaTime * 150;
         if (IsKeyDown(KEY_D))
         {
-            playerDim.x++;
+            allPlayers[playerId].dimension.x+=speed;
         }
-        EndDrawing();
+        if (IsKeyDown(KEY_A))
+        {
+            allPlayers[playerId].dimension.x-=speed;
+        }
+        if (IsKeyDown(KEY_W))
+        {
+            allPlayers[playerId].dimension.y-=speed;
+        }
+        if (IsKeyDown(KEY_S))
+        {
+            allPlayers[playerId].dimension.y+=speed;
+        }
+    draw();
+    EndDrawing();
 }
-Rectangle& Game::getPlayerLocation()
+Rectangle& Game::getPlayerLocationById(int id)
 {
-    return playerDim; 
+    return allPlayers[id].dimension;
 }
-void Game::addPlayer(Rectangle player)
+void Game::addPlayer(TempPlayer player)
 {
-    allPlayers.push_back(player);
+    allPlayers[player.Id] = player;
 }
 std::string Game::getPlayerDataAsString()
 {
-    std::string dataString = std::to_string(playerId) + "," + std::to_string(playerDim.x) + "," + std::to_string(playerDim.y);
+    std::string dataString = std::to_string(playerId) + "," + std::to_string(playerDim.dimension.x) + "," + std::to_string(playerDim.dimension.y);
     return dataString;
+}
+void Game::draw()
+{
+    for (auto& [id, value]: allPlayers)
+    {
+        DrawRectangle(value.dimension.x, value.dimension.y, 40, 40, BLACK);
+    }
+    if (IsKeyDown(KEY_D))
+    {
+    }
+}
+void Game::updatePlayerbyId(int Id, Rectangle dimension)
+{
+    allPlayers[Id].dimension = dimension;
 }
