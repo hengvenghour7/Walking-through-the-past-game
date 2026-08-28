@@ -8,14 +8,12 @@ using boost::asio::ip::udp;
 
 int main()
 {
-
     int playerID{0};
     struct playerInfo {
         int id;
         int x;
         int y;
     };
-    std::vector<udp::endpoint> allClients{};
     PlayersHandler playersHandler;
     std::vector<playerInfo> allPlayerInfo{};
 
@@ -34,11 +32,8 @@ int main()
                 std::string rec_message(recv_buf.data(), len);
                 if (rec_message == "Connect")
                 {
-                    allClients.push_back(remote_endpoint);
-                    std::cout<< "new player join the game" << std::endl;
                     playersHandler.addNewPlayer(&playerID);
                     std::string tempMsg = "Join" + std::string(",", 1) + playersHandler.getDataAsString();
-                    std::cout << rec_message << std::endl;
                     socket.send_to(boost::asio::buffer(tempMsg), remote_endpoint, 0, err);
                 }
                 else{
@@ -47,66 +42,20 @@ int main()
                     std::string messageType;
                     std::getline(iss, messageType, ',');
                     if (messageType == "update")
-{
-    while (std::getline(iss, token1, ','))
-    {
-        int temp_id = std::stoi(token1);
-
-        std::getline(iss, token1, ',');
-        int temp_x = std::stoi(token1);
-
-        std::getline(iss, token1, ',');
-        int temp_y = std::stoi(token1);
-
-        std::cout << "\nBEFORE UPDATE\n";
-        std::cout << "id = " << temp_id
-                  << " x = " << temp_x
-                  << " y = " << temp_y << "\n";
-
-        playersHandler.updatePlayerById(
-    temp_id,
-    SRectangle{temp_x, temp_y, 40, 40}
-);
-
-std::cout << "AFTER UPDATE: "
-          << playersHandler.getDataAsString()
-          << std::endl;
-
-        std::cout << "AFTER UPDATE\n";
-        std::cout << playersHandler.getDataAsString()
-                  << "\n";
-    }
-}
-                    std::string tempMsg = "Move" + std::string(",", 1) + playersHandler.getDataAsString();
-                    std::cout<< "all cccc" << allClients.size() << " \n";
-                    for (auto& client : allClients)
                     {
-                        socket.send_to(
-                            boost::asio::buffer(tempMsg),
-                            client,
-                            0,
-                            err
-                        );
-
-                        if (err)
+                        while (std::getline(iss, token1, ','))
                         {
-                            std::cout << "SEND ERROR: "
-                                    << err.message()
-                                    << std::endl;
-                        }
-                        else
-                        {
-                            std::cout << "SENT: "
-                                    << tempMsg
-                                    << " TO "
-                                    << client.address().to_string()
-                                    << ":"
-                                    << client.port()
-                                    << std::endl;
+                            int temp_id = std::stoi(token1);
+                            std::getline(iss, token1, ',');
+                            int temp_x = std::stoi(token1);
+                            std::getline(iss, token1, ',');
+                            int temp_y = std::stoi(token1);
+                            playersHandler.updatePlayerById(temp_id, SRectangle{temp_x, temp_y, 40, 40});
                         }
                     }
+                    std::string tempMsg = "Move" + std::string(",", 1) + playersHandler.getDataAsString();
+                    socket.send_to(boost::asio::buffer(tempMsg), remote_endpoint, 0, err);
                 }
-                // std::cout << rec_message << std::endl;
             }
             
         }
