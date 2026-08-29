@@ -1,9 +1,10 @@
 #include "game.h"
-#include "raylib.h"
+#include <raylib.h>
+#include <raymath.h>
 
 #include <iostream>
 
-Game::Game(int id): playerId(id)
+Game::Game(int id): playerId(id), isUpdateFromTheServer(false)
 {
     // allPlayers.push_back(playerDim);
 }
@@ -12,22 +13,47 @@ void Game::tick(float deltaTime)
     BeginDrawing();
         ClearBackground(ORANGE);
         float speed = deltaTime * 150;
+        auto& targetPlayer = allPlayers[playerId];
         if (IsKeyDown(KEY_D))
         {
-            allPlayers[playerId].dimension.x+=speed;
+            targetPlayer.dimension.x+=speed;
         }
         if (IsKeyDown(KEY_A))
         {
-            allPlayers[playerId].dimension.x-=speed;
+            targetPlayer.dimension.x-=speed;
         }
         if (IsKeyDown(KEY_W))
         {
-            allPlayers[playerId].dimension.y-=speed;
+            targetPlayer.dimension.y-=speed;
         }
         if (IsKeyDown(KEY_S))
         {
-            allPlayers[playerId].dimension.y+=speed;
+            targetPlayer.dimension.y+=speed;
         }
+            for (auto& [key, value] : allPlayers)
+            {
+                Vector2 current = {
+                        value.dimension.x,
+                        value.dimension.y
+                    };
+
+                    if (Vector2Distance(current, value.targetPosition) < 3.0f)
+                    {
+                        value.isNeedUpdate = false;
+                    }
+                if (value.isNeedUpdate)
+                {
+                    float smoothing = 10.0f;
+                    Vector2 tarPos = 
+                            {
+                                value.targetPosition.x - value.dimension.x, 
+                                value.targetPosition.y - value.dimension.y
+                            };
+                    // Vector2 tarScale = Vector2Scale(tarPos, speed);
+                    value.dimension.x += tarPos.x * smoothing * deltaTime;
+                    value.dimension.y += tarPos.y * smoothing * deltaTime;
+                }
+            }
     draw();
     EndDrawing();
 }
@@ -56,5 +82,12 @@ void Game::draw()
 }
 void Game::updatePlayerbyId(int Id, Rectangle dimension)
 {
-    allPlayers[Id].dimension = dimension;
+    allPlayers[Id].targetPosition = {dimension.x, dimension.y};
+}
+void Game::setIsUpdateFromtheServer(bool isUpdate)
+{
+    for (auto& [key, value]: allPlayers)
+    {
+        value.isNeedUpdate = isUpdate;
+    }
 }
