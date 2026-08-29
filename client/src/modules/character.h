@@ -6,6 +6,8 @@
 struct TempPlayer {
     int Id;
     Rectangle dimension;
+    Vector2 targetPosition;
+    bool isNeedUpdate;
 };
 class Character {
     Rectangle dimension;
