@@ -10,15 +10,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # --------------------------------------------------
-# MinGW / MSYS2
+# Compiler
 # --------------------------------------------------
-set(CMAKE_C_COMPILER "gcc")
-set(CMAKE_CXX_COMPILER "g++")
+# DO NOT set gcc/g++ here.
+# CMake will automatically use:
+#   - MSVC on Visual Studio
+#   - MinGW GCC on Windows/MSYS2
+#   - Clang on macOS
+#
+# set(CMAKE_C_COMPILER "gcc")
+# set(CMAKE_CXX_COMPILER "g++")
 
 # --------------------------------------------------
 # Boost
 # --------------------------------------------------
-set(BOOST_ROOT "/mingw64")
+# Only specify BOOST_ROOT on Windows/MSYS2.
+if(WIN32 AND NOT MSVC)
+    set(BOOST_ROOT "/mingw64")
+endif()
 
 find_package(Boost REQUIRED)
 
@@ -44,23 +53,48 @@ target_include_directories(server PRIVATE
 )
 
 # --------------------------------------------------
-# Libraries
+# Platform-specific libraries
 # --------------------------------------------------
-target_link_libraries(server PRIVATE
-    Boost::boost
-    ws2_32
-    mswsock
-)
+if(WIN32)
+
+    # Windows / MinGW
+    target_link_libraries(server PRIVATE
+        Boost::boost
+        ws2_32
+        mswsock
+    )
+
+elseif(APPLE)
+
+    # macOS
+    target_link_libraries(server PRIVATE
+        Boost::boost
+    )
+
+elseif(UNIX)
+
+    # Linux
+    target_link_libraries(server PRIVATE
+        Boost::boost
+    )
+
+endif()
 
 # --------------------------------------------------
 # Compiler warnings
 # --------------------------------------------------
 if(MSVC)
-    target_compile_options(server PRIVATE /W4)
+
+    target_compile_options(server PRIVATE
+        /W4
+    )
+
 else()
+
     target_compile_options(server PRIVATE
         -Wall
         -Wextra
         -Wpedantic
     )
+
 endif()
