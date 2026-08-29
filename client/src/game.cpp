@@ -12,7 +12,7 @@ void Game::tick(float deltaTime)
 {
     BeginDrawing();
         ClearBackground(ORANGE);
-        float speed = deltaTime * 150;
+        float speed = deltaTime * 300;
         auto& targetPlayer = allPlayers[playerId];
         if (IsKeyDown(KEY_D))
         {
@@ -37,7 +37,7 @@ void Game::tick(float deltaTime)
                         value.dimension.y
                     };
 
-                    if (Vector2Distance(current, value.targetPosition) < 3.0f)
+                    if (Vector2Distance(current, value.targetPosition) < 1.0f)
                     {
                         value.isNeedUpdate = false;
                     }
